@@ -1,29 +1,26 @@
-ThisBuild / organization := "fr.adelegue"
+ThisBuild / organization := "com.example"
 ThisBuild / version := "1.0-SNAPSHOT"
 ThisBuild / scalacOptions ++= Seq(
   "-Ymacro-annotations",
 )
 
 val V = new {
+  val distage = "0.10.18"
   val zio = "1.0.1"
   val silencer = "1.4.4"
 }
 
+val Deps = new {
+  val distageFramework = "io.7mind.izumi" %% "distage-framework" % V.distage
+}
+
+val commonSettings = Seq(
+  scalaVersion := "2.13.3",
+)
+
 lazy val `play-zio-sample` = (project in file("."))
-  .enablePlugins(PlayScala)
-  .settings(
-    scalaVersion := "2.13.3",
-    libraryDependencies ++= Seq(
-      "org.iq80.leveldb" % "leveldb" % "0.12",
-      "org.typelevel" %% "cats-effect" % "2.1.4",
-      "dev.zio" %% "zio" % V.zio,
-      "dev.zio" %% "zio-interop-cats" % "2.1.4.0",
-      "org.scalatestplus.play" %% "scalatestplus-play" % "5.1.0" % Test,
-    ),
-    addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.11.0" cross CrossVersion.full),
-  )
-  .dependsOn(macros)
-  .aggregate(macros)
+  .settings(commonSettings)
+  .aggregate(macros, server, client, sharedJvm, sharedJs)
 
 // Adds additional packages into Twirl
 //TwirlKeys.templateImports += "fr.adelegue.controllers._"
@@ -43,3 +40,43 @@ lazy val macros = project
     testFrameworks += new TestFramework("zio.test.sbt.ZTestFramework"),
     scalacOptions += "-language:experimental.macros",
   )
+
+lazy val server = project
+  .enablePlugins(PlayScala)
+  .settings(commonSettings)
+  .settings(
+    scalaJSProjects := Seq(client),
+    pipelineStages in Assets := Seq(scalaJSPipeline),
+    pipelineStages := Seq(digest, gzip),
+    // triggers scalaJSPipeline when using compile or continuous compilation
+    compile in Compile := ((compile in Compile) dependsOn scalaJSPipeline).value,
+    libraryDependencies ++= Seq(
+      Deps.distageFramework,
+
+      "org.iq80.leveldb" % "leveldb" % "0.12",
+      "dev.zio" %% "zio" % V.zio,
+      "org.scalatestplus.play" %% "scalatestplus-play" % "5.1.0" % Test,
+
+      "com.vmunier" %% "scalajs-scripts" % "1.1.4",
+    )
+  )
+  .dependsOn(sharedJvm, macros)
+
+lazy val client = project
+  .settings(commonSettings)
+  .settings(
+    scalaJSUseMainModuleInitializer := true,
+    libraryDependencies ++= Seq(
+      "org.scala-js" %%% "scalajs-dom" % "1.1.0"
+    )
+  )
+  .enablePlugins(ScalaJSPlugin, ScalaJSWeb)
+  .dependsOn(sharedJs)
+
+lazy val shared = crossProject(JSPlatform, JVMPlatform)
+  .crossType(CrossType.Pure)
+  .in(file("shared"))
+  .settings(commonSettings)
+  .jsConfigure(_.enablePlugins(ScalaJSWeb))
+lazy val sharedJvm = shared.jvm
+lazy val sharedJs = shared.js
