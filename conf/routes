@@ -4,7 +4,7 @@
 # ~~~~
 
 # An example controller showing a sample home page
-GET     /users                               controllers.UserController.list()
+GET     /users                               controllers.UserController.list
 POST    /users                               controllers.UserController.create()
 GET     /users/:id                           controllers.UserController.getById(id)
 PUT     /users/:id                           controllers.UserController.update(id)
