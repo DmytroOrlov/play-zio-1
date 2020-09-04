@@ -3,7 +3,7 @@
 ## Start the app 
 
 ```
-sbt '~run'
+sbt '~server/run'
 ```
 
 ## Use the app 

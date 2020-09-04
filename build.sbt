@@ -5,7 +5,7 @@ ThisBuild / scalacOptions ++= Seq(
 )
 
 val V = new {
-  val distage = "0.10.18"
+  val distage = "0.10.19"
   val zio = "1.0.1"
   val silencer = "1.4.4"
   val betterMonadicFor = "0.3.1"
@@ -20,7 +20,7 @@ val commonSettings = Seq(
   scalaVersion := "2.13.3",
 )
 
-lazy val `play-zio-sample` = (project in file("."))
+lazy val `play-zio-distage` = (project in file("."))
   .settings(commonSettings)
   .aggregate(macros, server, client, sharedJvm, sharedJs)
 
@@ -65,14 +65,15 @@ lazy val server = project
   .dependsOn(sharedJvm, macros)
 
 lazy val client = project
+  .enablePlugins(ScalaJSPlugin, ScalaJSWeb)
   .settings(commonSettings)
   .settings(
     scalaJSUseMainModuleInitializer := true,
     libraryDependencies ++= Seq(
-      "org.scala-js" %%% "scalajs-dom" % "1.1.0"
-    )
+      "org.scala-js" %%% "scalajs-dom" % "1.1.0",
+      "dev.zio" %%% "zio" % "1.0.1",
+    ),
   )
-  .enablePlugins(ScalaJSPlugin, ScalaJSWeb)
   .dependsOn(sharedJs)
 
 lazy val shared = crossProject(JSPlatform, JVMPlatform)
