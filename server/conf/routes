@@ -3,12 +3,12 @@
 # ~~~~
 
 # Home page
-GET        /                             com.example.playscalajs.controllers.Application.index
-GET     /users                               controllers.UserController.list
-POST    /users                               controllers.UserController.create()
-GET     /users/:id                           controllers.UserController.getById(id)
-PUT     /users/:id                           controllers.UserController.update(id)
+GET     /                                com.example.playscalajs.controllers.RootController.index
+GET     /users                           controllers.UserController.list
+POST    /users                           controllers.UserController.create
+GET     /users/:id                       controllers.UserController.getById(id)
+PUT     /users/:id                       controllers.UserController.update(id)
 
 # Prefix must match `play.assets.urlPrefix`
-GET        /assets/*file                 controllers.Assets.at(file)
-GET        /versionedAssets/*file        controllers.Assets.versioned(path="/public", file: Asset)
+GET     /assets/*file                    controllers.Assets.at(file)
+GET     /versionedAssets/*file           controllers.Assets.versioned(path="/public", file: Asset)

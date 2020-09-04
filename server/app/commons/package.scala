@@ -1,50 +1,37 @@
 import play.api.MarkerContext
 import play.api.mvc.{Action, ActionBuilder, BodyParser, Result}
 import zio.macros.accessible
-import zio.{Has, IO, Layer, RIO, Runtime, UIO, ZIO, ZLayer}
-
-import scala.concurrent.Future
+import zio.{RIO, Runtime, UIO, ZIO}
 
 package object commons {
-  import users._
-
-  type AppEnv = Has[UserRepository] with Has[AppLogger]
-
-  object AppEnv {
-    val live: Layer[Throwable, AppEnv] = AppLogger.live >>> UserRepository.live.passthrough
-  }
 
   implicit class ActionBuilderOps[+R[_], B](val ab: ActionBuilder[R, B]) extends AnyVal {
-    def asyncTask[Ctx](cb: R[B] => RIO[Ctx, Result])(implicit r: Layer[Throwable, Ctx]): Action[B] =
+    def asyncTask[Env](cb: R[B] => RIO[Env, Result])(implicit rts: Runtime[Env]): Action[B] =
       ab.async { c =>
-        val value: IO[Throwable, Result] = cb(c).provideLayer(r)
-        val future: Future[Result] = Runtime.default.unsafeRunToFuture(value)
-        future
+        val zio = cb(c)
+        rts.unsafeRunToFuture(zio)
       }
 
-    def asyncTask[A, Ctx](
+    def asyncTask[A, Env](
         bp: BodyParser[A]
-    )(cb: R[A] => RIO[Ctx, Result])(implicit r: Layer[Throwable, Ctx]): Action[A] =
+    )(cb: R[A] => RIO[Env, Result])(implicit rts: Runtime[Env]): Action[A] =
       ab.async[A](bp) { c =>
-        val value: IO[Throwable, Result] = cb(c).provideLayer(r)
-        val future: Future[Result] = Runtime.default.unsafeRunToFuture(value)
-        future
+        val zio = cb(c)
+        rts.unsafeRunToFuture(zio)
       }
 
-    def asyncZio[Ctx](cb: R[B] => ZIO[Ctx, Result, Result])(implicit r: Layer[Throwable, Ctx]): Action[B] =
+    def asyncZio[Env](cb: R[B] => ZIO[Env, Result, Result])(implicit rts: Runtime[Env]): Action[B] =
       ab.async { c =>
-        val value: IO[Throwable, Result] = cb(c).either.map(_.merge).provideLayer(r)
-        val future: Future[Result] = Runtime.default.unsafeRunToFuture(value)
-        future
+        val zio = cb(c).either.map(_.merge)
+        rts.unsafeRunToFuture(zio)
       }
 
-    def asyncZio[A, Ctx](
+    def asyncZio[A, Env](
         bp: BodyParser[A]
-    )(cb: R[A] => ZIO[Ctx, Result, Result])(implicit r: Layer[Throwable, Ctx]): Action[A] =
+    )(cb: R[A] => ZIO[Env, Result, Result])(implicit rts: Runtime[Env]): Action[A] =
       ab.async[A](bp) { c =>
-        val value: IO[Throwable, Result] = cb(c).either.map(_.merge).provideLayer(r)
-        val future: Future[Result] = Runtime.default.unsafeRunToFuture(value)
-        future
+        val zio = cb(c).either.map(_.merge)
+        rts.unsafeRunToFuture(zio)
       }
   }
 
@@ -59,14 +46,13 @@ package object commons {
 
     import play.api.Logger
 
-    val live: ZLayer[Any, Nothing, Has[AppLogger]] = ZLayer.succeed(new ProdLogger())
+    def make(logger: Logger) = {
+      new AppLogger {
+        override def info(message: => String)(implicit mc: MarkerContext): UIO[Unit] = UIO(logger.info(message))
 
-    class ProdLogger(logger: Logger = Logger("application")) extends AppLogger {
-      override def info(message: => String)(implicit mc: MarkerContext): UIO[Unit] = UIO(logger.info(message))
-
-      override def debug(message: => String)(implicit mc: MarkerContext): UIO[Unit] = UIO(logger.debug(message))
+        override def debug(message: => String)(implicit mc: MarkerContext): UIO[Unit] = UIO(logger.debug(message))
+      }
     }
-
   }
 
 }

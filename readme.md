@@ -1,4 +1,4 @@
-# ZIO / ZLayer with playframework
+# ZIO / DIstage with playframework
 
 ## Start the app 
 
