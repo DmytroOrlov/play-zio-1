@@ -6,8 +6,8 @@ ThisBuild / scalacOptions ++= Seq(
 
 val V = new {
   val distage = "0.10.19"
-  val zio = "1.0.1"
-  val silencer = "1.4.4"
+  val zio = "1.0.3"
+  val silencer = "1.7.1"
   val betterMonadicFor = "0.3.1"
 }
 
@@ -17,7 +17,7 @@ val Deps = new {
 }
 
 val commonSettings = Seq(
-  scalaVersion := "2.13.3",
+  scalaVersion := "2.13.4",
 )
 
 lazy val `play-zio-distage` = (project in file("."))
@@ -32,7 +32,7 @@ lazy val `play-zio-distage` = (project in file("."))
 
 lazy val macros = project
   .settings(
-    scalaVersion := "2.13.1",
+    scalaVersion := "2.13.3",
     libraryDependencies ++= Seq(
       compilerPlugin("com.github.ghik" % "silencer-plugin" % V.silencer cross CrossVersion.full),
       "com.github.ghik" % "silencer-lib" % V.silencer % Provided cross CrossVersion.full,

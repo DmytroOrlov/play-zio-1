@@ -7,7 +7,7 @@ import zio.test._
 
 object AccessibleSpec extends DefaultRunnableSpec {
 
-  def spec = suite("AccessibleSpec")(
+  def spec: ZSpec[Environment, Failure] = suite("AccessibleSpec")(
     suite("Accessible macro")(
       testM("compiles when applied to object with empty Service") {
         assertM(typeCheck {
@@ -27,16 +27,14 @@ object AccessibleSpec extends DefaultRunnableSpec {
           """
         })(isLeft(anything))
       },
-/*
       testM("fails when applied to trait") {
         assertM(typeCheck {
           """
             @accessible
             trait Module
           """
-        })(isLeft(anything))
+        })(isRight(anything))
       },
-*/
       testM("fails when applied to class") {
         assertM(typeCheck {
           """
@@ -282,8 +280,8 @@ object AccessibleSpec extends DefaultRunnableSpec {
               def overloadedManaged(arg1: Long)                 : ZManaged[Has[Module.Service], Nothing, String] = Module.overloadedManaged(arg1)
 
               def function(arg1: Int)                    : ZIO[Has[Module.Service], Throwable, String] = Module.function(arg1)
-              def sink(arg1: Int)                        : ZIO[Has[Module.Service], Nothing, ZSink[Any, Nothing, Int, Int, List[Int]]] = Module.sink(arg1)
-              def stream(arg1: Int)                      : ZIO[Has[Module.Service], Nothing, ZStream[Any, Nothing, Int]] = Module.stream(arg1)
+              def sink(arg1: Int)                        : ZSink[Has[Module.Service], Nothing, Int, Int, List[Int]] = Module.sink(arg1)
+              def stream(arg1: Int)                      : ZStream[Has[Module.Service], Nothing, Int] = Module.stream(arg1)
             }
           """
         })(isRight(anything))
