@@ -1,7 +1,8 @@
-import play.api.MarkerContext
 import play.api.mvc.{Action, ActionBuilder, BodyParser, Result}
-import zio.macros.accessible
 import zio.{RIO, Runtime, UIO, ZIO}
+import play.api.MarkerContext
+import zio.macros.accessible
+import play.api.Logger
 
 package object commons {
 
@@ -36,23 +37,19 @@ package object commons {
   }
 
   @accessible
-  trait AppLogger {
+  trait PlayLogger {
     def info(message: => String)(implicit mc: MarkerContext): UIO[Unit]
 
     def debug(message: => String)(implicit mc: MarkerContext): UIO[Unit]
   }
 
-  object AppLogger {
+  object PlayLogger {
+    def make(logger: Logger) =
+      new PlayLogger {
+        def info(message: => String)(implicit mc: MarkerContext) = UIO(logger.info(message))
 
-    import play.api.Logger
-
-    def make(logger: Logger) = {
-      new AppLogger {
-        override def info(message: => String)(implicit mc: MarkerContext): UIO[Unit] = UIO(logger.info(message))
-
-        override def debug(message: => String)(implicit mc: MarkerContext): UIO[Unit] = UIO(logger.debug(message))
+        def debug(message: => String)(implicit mc: MarkerContext) = UIO(logger.debug(message))
       }
-    }
   }
 
 }

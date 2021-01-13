@@ -1,7 +1,7 @@
 package loader
 
 import com.example.playscalajs.controllers.RootController
-import commons.AppLogger
+import commons._
 import controllers.{AssetsComponents, Controllers, UserController}
 import distage.{Injector, ModuleDef}
 import play.api.ApplicationLoader.Context
@@ -19,12 +19,12 @@ class AppLoader extends ApplicationLoader {
       _.configure(context.environment, context.initialConfiguration, Map.empty)
     }
     new BuiltInComponentsFromContext(context) with AssetsComponents {
-      implicit val rts = Runtime.default
+      val rts = Runtime.default
 
       val definition = new ModuleDef {
-        make[ControllerComponents].fromValue(controllerComponents)
-        make[Logger].from(Logger("application"))
-        make[AppLogger].from(AppLogger.make _)
+        make[ControllerComponents].from(controllerComponents)
+        make[Logger].from(Logger("users"))
+        make[PlayLogger].from(PlayLogger.make _)
         make[UserRepository].fromHas(UserRepository.make)
         make[UserController with RootController].fromHas(Controllers.make _)
       }

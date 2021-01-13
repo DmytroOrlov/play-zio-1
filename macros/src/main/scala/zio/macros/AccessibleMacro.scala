@@ -229,18 +229,14 @@ private[macros] class AccessibleMacro(val c: whitebox.Context) {
           ${service}
           $mods object $tname extends { ..$earlydefns } with ..$parents { $self =>
             ..$body
-            object > {
-              ..$accessors
-            }
+            ..$accessors
           }
         """
       case PlainModuleInfo(None, service, _) =>
         q"""
           ${service}
           object ${service.name.toTermName} {
-            object > {
-              ..$accessors
-            }
+            ..$accessors
           }
         """
       case _ => abort("@accessible macro failure - could not unquote annotated object.")

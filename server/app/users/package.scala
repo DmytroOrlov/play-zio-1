@@ -5,10 +5,9 @@ import org.iq80.leveldb.{DB, DBIterator, Options}
 import play.api.libs.json.{JsError, Json}
 import zio._
 import zio.macros.accessible
+import commons._
 
 package object users {
-
-  import commons._
 
   object User {
     implicit val format = Json.format[User]
@@ -29,7 +28,7 @@ package object users {
 
   object UserRepository {
     val make = for {
-      _ <- AppLogger.>.info("Opening level DB at target/leveldb").toManaged_
+      _ <- PlayLogger.info("Opening level DB at target/leveldb").toManaged_
       res <- Task(
         new LevelDbUserRepository(
           factory.open(
@@ -38,7 +37,7 @@ package object users {
           )
         )
       ).toManaged { repo =>
-        AppLogger.>.info("Closing level DB at target/leveldb") *> Task(repo.db.close()).ignore
+        PlayLogger.info("Closing level DB at target/leveldb") *> Task(repo.db.close()).ignore
       }
     } yield res
 
