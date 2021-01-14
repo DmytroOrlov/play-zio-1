@@ -7,12 +7,16 @@ ThisBuild / scalacOptions ++= Seq(
 val V = new {
   val distage = "0.10.19"
   val zio = "1.0.3"
+  val catsEffect = "2.3.1"
   val silencer = "1.7.1"
   val betterMonadicFor = "0.3.1"
 }
 
 val Deps = new {
   val distageFramework = "io.7mind.izumi" %% "distage-framework" % V.distage
+  val zio = "dev.zio" %% "zio" % V.zio
+  val catsEffect = "org.typelevel" %% "cats-effect" % V.catsEffect
+
   val betterMonadicFor = "com.olegpy" %% "better-monadic-for" % V.betterMonadicFor
 }
 
@@ -54,9 +58,10 @@ lazy val server = project
     compile in Compile := ((compile in Compile) dependsOn scalaJSPipeline).value,
     libraryDependencies ++= Seq(
       Deps.distageFramework,
+      Deps.zio,
+      Deps.catsEffect,
 
       "org.iq80.leveldb" % "leveldb" % "0.12",
-      "dev.zio" %% "zio" % V.zio,
 
       "com.vmunier" %% "scalajs-scripts" % "1.1.4",
     ),
@@ -71,7 +76,7 @@ lazy val client = project
     scalaJSUseMainModuleInitializer := true,
     libraryDependencies ++= Seq(
       "org.scala-js" %%% "scalajs-dom" % "1.1.0",
-      "dev.zio" %%% "zio" % "1.0.1",
+      "dev.zio" %%% "zio" % V.zio,
     ),
   )
   .dependsOn(sharedJs)

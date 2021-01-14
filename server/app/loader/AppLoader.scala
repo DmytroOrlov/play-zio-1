@@ -1,13 +1,12 @@
 package loader
 
-import com.example.playscalajs.controllers.RootController
 import commons._
-import controllers.{AssetsComponents, Controllers, UserController}
+import controllers.{AssetsComponents, UserController, Users}
 import distage.{Injector, ModuleDef}
 import play.api.ApplicationLoader.Context
+import play.api._
 import play.api.mvc.{ControllerComponents, EssentialFilter}
 import play.api.routing.Router
-import play.api.{Application, ApplicationLoader, BuiltInComponentsFromContext, Logger, LoggerConfigurator}
 import router.Routes
 import users.UserRepository
 import zio._
@@ -19,18 +18,20 @@ class AppLoader extends ApplicationLoader {
       _.configure(context.environment, context.initialConfiguration, Map.empty)
     }
     new BuiltInComponentsFromContext(context) with AssetsComponents {
-      val rts = Runtime.default
+      lazy val rts = Runtime.default
 
       val definition = new ModuleDef {
+        make[Runtime[Any]].from(rts)
         make[ControllerComponents].from(controllerComponents)
-        make[Logger].from(Logger("users"))
+        make[Logger].fromValue(Logger("users"))
         make[PlayLogger].from(PlayLogger.make _)
         make[UserRepository].fromHas(UserRepository.make)
-        make[UserController with RootController].fromHas(Controllers.make _)
+        make[Users].fromHas(Users.make)
+        make[UserController]
       }
       val (controllers, release) = rts.unsafeRun(
         Injector()
-          .produceGetF[Task, UserController with RootController](definition)
+          .produceGetF[Task, UserController](definition)
           .unsafeNoRelease
       )
 

@@ -3,7 +3,7 @@
 # ~~~~
 
 # Home page
-GET     /                                com.example.playscalajs.controllers.RootController.index
+GET     /                                controllers.RootController.index
 GET     /users                           controllers.UserController.list
 POST    /users                           controllers.UserController.create
 GET     /users/:id                       controllers.UserController.getById(id)

@@ -1,7 +1,7 @@
-package com.example.playscalajs.controllers
+package controllers
 
 import com.example.playscalajs.shared.SharedMessages
-import play.api.mvc._
+import play.api.mvc.BaseController
 
 trait RootController extends BaseController {
 

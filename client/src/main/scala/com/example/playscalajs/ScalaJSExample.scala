@@ -101,6 +101,6 @@ object ScalaJSExample extends App {
 
       renderLoop(System.currentTimeMillis())
       dom.document.getElementById("scalajsShoutOut").textContent = SharedMessages.itWorks
-    }.fold(_ => ExitCode.failure, _ => ExitCode.success)
+    }.exitCode
   }
 }
